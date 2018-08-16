@@ -128,8 +128,12 @@
     "core/router/macro/interpreter/parser",
     "core/router/macro/interpreter/token",
     "core/router/node",
+    "hero",
+    "hero/di",
     "middleware/logger",
     "middleware/recover",
+    "mvc",
+    "sessions",
     "view"
   ]
   revision = "217d9feadc0fc5b317826a901065e0c4c27d3cad"
@@ -307,6 +311,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "faf93cb026e3417c1ca3e8329e864d582bca3f43c860f17d829457e75240c591"
+  inputs-digest = "1b06c6aa8bc99acd6b0e8078425f53d570501aa68c09993558d265221e0d99c3"
   solver-name = "gps-cdcl"
   solver-version = 1
