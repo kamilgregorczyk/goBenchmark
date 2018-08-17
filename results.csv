@@ -1,7 +1,1 @@
 Benchmark name;runtime;cpu usage;memory usage
-B tree;0,42;6,43%;0,06%
-Built-in sort;0,23;12,98%;0,09%
-Merge sort;1,43;9,74%;0,12%
-Regexp for digits;31,21;5,15%;0,07%
-Importing big json file;10,47;1,31%;0,08%
-Aggregating column from dict and counting median;0,16;3,35%;0,08%

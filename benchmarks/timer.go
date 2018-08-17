@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"strings"
 	"os"
+	"github.com/shirou/gopsutil/process"
 )
 
 type Metric struct {
@@ -25,15 +26,17 @@ type Timer struct {
 	cpuUsage               string
 	memoryUsage            string
 	metrics                Metric
+	proc                   *process.Process
 }
 
-func NewTimer(name string, dataAsString string, dataAsJson schema.JsonSchema, unorderedListOfNumbers []int) Timer {
+func NewTimer(name string, dataAsString string, dataAsJson schema.JsonSchema, unorderedListOfNumbers []int, proc *process.Process) Timer {
 	timer := Timer{}
 	timer.name = name
 	timer.dataAsString = dataAsString
 	timer.dataAsJson = dataAsJson
 	timer.unorderedListOfNumbers = unorderedListOfNumbers
 	timer.metrics = Metric{stopEvent: make(chan bool), stoppedEvent: make(chan bool)}
+	timer.proc = proc
 	return timer
 }
 
@@ -61,15 +64,14 @@ func (timer *Timer) startRecordingResources() {
 				return
 			default:
 				timer.recordUsage()
-				time.Sleep(time.Duration(200) * time.Millisecond)
 			}
 		}
 	}()
 }
 
 func (timer *Timer) recordUsage() {
-	timer.metrics.cpuUsagePoints = append(timer.metrics.cpuUsagePoints, CpuUsageAsFloat())
-	timer.metrics.memoryUsagePoints = append(timer.metrics.memoryUsagePoints, MemoryUsageAsFloat())
+	timer.metrics.cpuUsagePoints = append(timer.metrics.cpuUsagePoints, CpuUsageAsFloat(timer.proc))
+	timer.metrics.memoryUsagePoints = append(timer.metrics.memoryUsagePoints, MemoryUsageAsFloat(timer.proc))
 }
 func (timer *Timer) stopRecordingResources() {
 	timer.metrics.stopEvent <- true

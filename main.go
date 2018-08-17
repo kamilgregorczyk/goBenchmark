@@ -8,6 +8,8 @@ import (
 	"strconv"
 	"goBenchmark/schema"
 	"goBenchmark/benchmarks"
+	"github.com/shirou/gopsutil/process"
+	"os"
 )
 
 func LoadJsonSchemaFromFileAsStruct() (schema.JsonSchema) {
@@ -51,12 +53,23 @@ func UnorderedListOfNumbers(value string) ([]int) {
 	return newValues[:(len(newValues) / 11)]
 }
 
+func GetCurrentProcess() *process.Process {
+	processes, _ := process.Processes()
+	for _, proc := range processes {
+		if proc.Pid == int32(os.Getpid()) {
+			return proc
+		}
+	}
+	panic("No process found")
+}
+
 func main() {
+	currentProcess := GetCurrentProcess()
 	fmt.Println("************************")
 	fmt.Println("***   Go benchmark   ***")
 	fmt.Println("************************")
-	fmt.Println("Available CPU cores: " + fmt.Sprintf("%v", benchmarks.CpuCoreCount()) + " Current CPU usage: " + benchmarks.CpuUsageAsString())
-	fmt.Println("Available Memory: " + benchmarks.MemorySize() + " Current Memory usage: " + benchmarks.MemoryUsageAsString())
+	fmt.Println("Available CPU cores: " + fmt.Sprintf("%v", benchmarks.CpuCoreCount()) + " Current CPU usage: " + benchmarks.CpuUsageAsString(currentProcess))
+	fmt.Println("Available Memory: " + benchmarks.MemorySize() + " Current Memory usage: " + benchmarks.MemoryUsageAsString(currentProcess))
 	testDataAsJsonChan := make(chan schema.JsonSchema, 1)
 	testDataAsStringChan := make(chan string, 1)
 	unorderedListOfNumbersChan := make(chan []int, 1)
@@ -80,12 +93,12 @@ func main() {
 	testDataAsString := <-testDataAsStringChan
 	unorderedListOfNumbers := <-unorderedListOfNumbersChan
 
-	benchmarks.BTreeBenchmark(benchmarks.NewTimer("B tree", testDataAsString, testDataAsJson, unorderedListOfNumbers))
-	benchmarks.BuiltInSortBenchmark(benchmarks.NewTimer("Built-in sort", testDataAsString, testDataAsJson, unorderedListOfNumbers))
-	benchmarks.MergeSortBenchmark(benchmarks.NewTimer("Merge sort", testDataAsString, testDataAsJson, unorderedListOfNumbers))
-	benchmarks.RegexpBenchmark(benchmarks.NewTimer("Regexp for digits", testDataAsString, testDataAsJson, unorderedListOfNumbers))
-	benchmarks.JsonImportBenchmark(benchmarks.NewTimer("Importing big json file", testDataAsString, testDataAsJson, unorderedListOfNumbers))
-	benchmarks.AggregateColumnBenchmark(benchmarks.NewTimer("Aggregating column from dict and counting median", testDataAsString, testDataAsJson, unorderedListOfNumbers))
+	benchmarks.BTreeBenchmark(benchmarks.NewTimer("B tree", testDataAsString, testDataAsJson, unorderedListOfNumbers, currentProcess))
+	benchmarks.BuiltInSortBenchmark(benchmarks.NewTimer("Built-in sort", testDataAsString, testDataAsJson, unorderedListOfNumbers, currentProcess))
+	benchmarks.MergeSortBenchmark(benchmarks.NewTimer("Merge sort", testDataAsString, testDataAsJson, unorderedListOfNumbers, currentProcess))
+	benchmarks.RegexpBenchmark(benchmarks.NewTimer("Regexp for digits", testDataAsString, testDataAsJson, unorderedListOfNumbers, currentProcess))
+	benchmarks.JsonImportBenchmark(benchmarks.NewTimer("Importing big json file", testDataAsString, testDataAsJson, unorderedListOfNumbers, currentProcess))
+	benchmarks.AggregateColumnBenchmark(benchmarks.NewTimer("Aggregating column from dict and counting median", testDataAsString, testDataAsJson, unorderedListOfNumbers, currentProcess))
 
 	fmt.Println("Done!")
 

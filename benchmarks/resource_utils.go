@@ -6,26 +6,8 @@ import (
 	"github.com/shirou/gopsutil/mem"
 	"strings"
 	"github.com/shirou/gopsutil/process"
+	"time"
 )
-
-func currentProcess() *process.Process {
-	processes, _ := process.Processes()
-	return processes[0]
-}
-
-func CpuCoreCount() (int) {
-	count, _ := cpu.Counts(true)
-	return count
-}
-
-func CpuUsageAsFloat() float64 {
-	usage, _ := currentProcess().CPUPercent()
-	return usage
-}
-
-func CpuUsageAsString() string {
-	return FloatToString(CpuUsageAsFloat())
-}
 
 func ByteCountDecimal(b uint64) string {
 	const unit = 1000
@@ -40,18 +22,32 @@ func ByteCountDecimal(b uint64) string {
 	return fmt.Sprintf("%.1f %cB", float64(b)/float64(div), "kMGTPE"[exp])
 }
 
+func CpuCoreCount() (int) {
+	count, _ := cpu.Counts(true)
+	return count
+}
+
+func CpuUsageAsFloat(proc *process.Process) float64 {
+	usage, _ := proc.Percent(time.Duration(200) * time.Millisecond)
+	return usage
+}
+
+func CpuUsageAsString(proc *process.Process) string {
+	return FloatToString(CpuUsageAsFloat(proc))
+}
+
 func MemorySize() string {
 	memory, _ := mem.VirtualMemory()
 	return ByteCountDecimal(memory.Total)
 }
 
-func MemoryUsageAsFloat() float64 {
-	usage, _ := currentProcess().MemoryPercent()
+func MemoryUsageAsFloat(proc *process.Process) float64 {
+	usage, _ := proc.MemoryPercent()
 	return float64(usage)
 }
 
-func MemoryUsageAsString() string {
-	return FloatToString(MemoryUsageAsFloat())
+func MemoryUsageAsString(proc *process.Process) string {
+	return FloatToString(MemoryUsageAsFloat(proc))
 }
 
 func FloatToString(value float64) string {
